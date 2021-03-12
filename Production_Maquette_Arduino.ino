@@ -1,6 +1,7 @@
 /******************************************************************************
    INCLUDES
  ******************************************************************************/
+
 #include "grove_two_rgb_led_matrix.h"
 #include <ChainableLED.h>
 #include "arduino_secrets.h"
@@ -14,12 +15,12 @@ uint32_t messageRate = 60000;         // stores the current data message rate in
 unsigned long lastMessageTime = 0;   // stores the time when last data message was sent
 GroveTwoRGBLedMatrixClass matrix;   // instance of MatrixClass
 
+
 #ifdef ARDUINO_SAMD_VARIANT_COMPLIANCE
     #define SERIAL SerialUSB
 #else
     #define SERIAL Serial
 #endif
-
 
 #define DISPLAY_COLOR    0X11
 
@@ -28,17 +29,6 @@ GroveTwoRGBLedMatrixClass matrix;   // instance of MatrixClass
    USER PROGRAM
  ******************************************************************************/
 
-  // An example of a simple command callback function
-void blinkLED5times(const String arguments, String &response) {
-  pinMode(LED_BUILTIN, OUTPUT);
-  for (byte i = 0; i < 5; i++) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(250);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(250);
-  }
-  response = "{\"blinked\":\"5 times\"}";
-}
 // goStraight Command
 void goStraight(const String arguments, String &response) {
 
@@ -54,7 +44,7 @@ void goStraight(const String arguments, String &response) {
     0xffffffadadffffff
   };
 
-  matrix.displayFrames(goStraightArray, 2000, true, 1);
+  matrix.displayFrames(goStraightArray, 0, true, 1);
   delay(10000);
 
 
@@ -76,7 +66,7 @@ void goToLoadingDock(const String arguments, String &response) {
     0xffffffffffffffff
   };
 
-  matrix.displayFrames(goToLoadingDockArray, 2000, true, 1);
+  matrix.displayFrames(goToLoadingDockArray, 0, true, 1);
   delay(10000);
   
   
@@ -84,20 +74,25 @@ void goToLoadingDock(const String arguments, String &response) {
 }
 
 void setup() {
+
   Serial.begin(115200);
-  Serial.print("\n*** Live Objects on Arduino MKR boards, revision ");
+  Serial.print("\n*** Live Objects for Arduino MKR boards, revision ");
   Serial.print(SW_REVISION);
   Serial.println("***");
 
-  // Declaring a simple commands hadled by the function 'blinkLED5times'.
+  
+  // Declaring commands.
   lo.addCommand("continueOnTheRoad", goStraight);
   lo.addCommand("stopAtLoadingDock", goToLoadingDock);
+  // connects to the network + Live Objects
   lo.setSecurity(TLS);
   lo.begin(MQTT, TEXT, true);
-  lo.connect();                          // connects to the network + Live Objects
+  lo.connect();      
+  
 }
 
 void loop() {
+  
   if (millis() - lastMessageTime > messageRate) {
     // collect data periodically
     Serial.println("Sampling data");
