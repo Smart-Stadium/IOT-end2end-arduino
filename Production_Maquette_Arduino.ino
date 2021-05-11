@@ -15,7 +15,6 @@ uint32_t messageRate = 60000;         // stores the current data message rate in
 unsigned long lastMessageTime = 0;   // stores the time when last data message was sent
 GroveTwoRGBLedMatrixClass matrix;   // instance of MatrixClass
 
-
 #ifdef ARDUINO_SAMD_VARIANT_COMPLIANCE
     #define SERIAL SerialUSB
 #else
@@ -28,8 +27,26 @@ GroveTwoRGBLedMatrixClass matrix;   // instance of MatrixClass
 /******************************************************************************
    USER PROGRAM
  ******************************************************************************/
+// Confirm connexion
+void showConnected() {
 
-// goStraight Command
+  uint64_t printGreenSquare[] = {
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252,
+    0x5252525252525252
+  };
+
+  matrix.displayFrames(printGreenSquare, 0, true, 1);
+  delay(5000);
+
+}
+
+// goStraight Command callback function
 void goStraight(const String arguments, String &response) {
 
 
@@ -51,7 +68,7 @@ void goStraight(const String arguments, String &response) {
   response = "{\"way\":\"Vehicle is going straight.\"}";
 }
 
-// goToLoadingDock Command
+// goToLoadingDock  callback function
 void goToLoadingDock(const String arguments, String &response) {
 
 
@@ -73,26 +90,57 @@ void goToLoadingDock(const String arguments, String &response) {
   response = "{\"way\":\"Vehicle is stopping at the loading dock.\"}";
 }
 
+void turfOffLeds() {
+
+  uint64_t off[] = {
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff,
+    0xffffffffffffffff
+  };
+
+  matrix.displayFrames(off, 0, true, 1);
+  delay(5000);
+
+} 
+
+
+// turfOffLeds  callback function
+void turnOffMatrixLeds(const String arguments, String &response) {
+
+  turfOffLeds();
+  response = "{\"Turn of leds.\"}";
+
+} 
+
+
 void setup() {
 
   Serial.begin(115200);
   Serial.print("\n*** Live Objects for Arduino MKR boards, revision ");
   Serial.print(SW_REVISION);
   Serial.println("***");
-
   
   // Declaring commands.
   lo.addCommand("continueOnTheRoad", goStraight);
   lo.addCommand("stopAtLoadingDock", goToLoadingDock);
+  lo.addCommand("turnOffMatrixLeds", turnOffMatrixLeds);
   // connects to the network + Live Objects
   lo.setSecurity(TLS);
   lo.begin(MQTT, TEXT, true);
-  lo.connect();      
-  
+ 
+  lo.connect();
+  showConnected();
+  turfOffLeds();
+
 }
 
 void loop() {
-  
+
   if (millis() - lastMessageTime > messageRate) {
     // collect data periodically
     Serial.println("Sampling data");
