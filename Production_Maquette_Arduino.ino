@@ -113,7 +113,7 @@ void turfOffLeds() {
 void turnOffMatrixLeds(const String arguments, String &response) {
 
   turfOffLeds();
-  response = "{\"Turn of leds.\"}";
+  response = "{\"action\":\"Turn of leds.\"}";
 
 } 
 
